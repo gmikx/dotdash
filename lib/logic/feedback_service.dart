@@ -18,12 +18,13 @@ class FeedbackService {
   bool _initialized = false;
   String? _tempPath;
 
+  /// Initializes audio players and vibration support.
+  /// Safe to call from every screen's initState() — subsequent calls are no-ops.
   Future<void> initialize() async {
     if (_initialized) return;
     try {
       _hasVibrator = await Vibration.hasVibrator();
     } catch (e) {
-      // print('Error checking vibration support: $e');
       _hasVibrator = false;
     }
     // Set to low latency mode for better responsiveness
@@ -128,7 +129,6 @@ class FeedbackService {
     bool sound = true,
     int durationMs = 80,
   }) async {
-    // print('playDot: sound=$sound, haptics=$haptics');
     if (sound) {
       await _playSound(_dotPlayer);
     }
@@ -151,7 +151,6 @@ class FeedbackService {
     bool sound = true,
     int durationMs = 240,
   }) async {
-    // print('playDash: sound=$sound, haptics=$haptics');
     if (sound) {
       await _playSound(_dashPlayer);
     }
@@ -178,19 +177,10 @@ class FeedbackService {
       }
       await HapticFeedback.heavyImpact();
     }
-
-    // if (sound) {
-    //   await _playSound(_errorPlayer);
-    // }
   }
 
   /// Play success feedback
   Future<void> playSuccess({bool haptics = true, bool sound = true}) async {
-    // User requested to remove the high beep for success
-    // if (sound) {
-    //   await _playSound('success.wav');
-    // }
-
     if (haptics) {
       if (_hasVibrator) {
         await Vibration.vibrate(pattern: [0, 100, 100, 200], amplitude: 200);
