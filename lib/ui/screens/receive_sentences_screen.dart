@@ -81,14 +81,14 @@ class _ReceiveSentencesScreenState
         if (userText[lastCharIndex] != targetClean[lastCharIndex]) {
           // Wrong character
           _feedback.playError(
-            haptics: true,
+            haptics: ref.read(settingsProvider).feedback.haptics,
             sound: ref.read(settingsProvider).feedback.sound,
           );
         }
       } else {
         // Exceeded length - also wrong
         _feedback.playError(
-          haptics: true,
+          haptics: ref.read(settingsProvider).feedback.haptics,
           sound: ref.read(settingsProvider).feedback.sound,
         );
       }
@@ -110,8 +110,11 @@ class _ReceiveSentencesScreenState
       if (correctCount == _targetSentence.length &&
           userText.length == targetClean.length) {
         _isComplete = true;
-        _focusNode.unfocus(); // Prevent focus issues when widget is replaced
-        _feedback.playSuccess(haptics: true);
+        _focusNode.unfocus();
+        _feedback.playSuccess(
+          haptics: ref.read(settingsProvider).feedback.haptics,
+          sound: ref.read(settingsProvider).feedback.sound,
+        );
         // Auto-advance
         Future.delayed(const Duration(milliseconds: 1500), () {
           if (mounted) {
@@ -144,7 +147,7 @@ class _ReceiveSentencesScreenState
 
     await _feedback.playMorseSequence(
       _targetSentence,
-      haptics: true, // Force haptics for learning
+      haptics: settings.feedback.haptics,
       sound: settings.feedback.sound,
       timing: timing,
       onCharacter: (index, char) {

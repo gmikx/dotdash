@@ -89,13 +89,13 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
       // Haptic/Sound feedback
       if (symbol == '.') {
         _feedback.playDot(
-          haptics: true,
+          haptics: settings.feedback.haptics,
           sound: settings.feedback.sound,
           durationMs: duration,
         );
       } else {
         _feedback.playDash(
-          haptics: true,
+          haptics: settings.feedback.haptics,
           sound: settings.feedback.sound,
           durationMs: duration,
         );
@@ -137,11 +137,14 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
 
     if (correct) {
       await _feedback.playSuccess(
-        haptics: true,
+        haptics: settings.feedback.haptics,
         sound: settings.feedback.sound,
       );
     } else {
-      await _feedback.playError(haptics: true, sound: settings.feedback.sound);
+      await _feedback.playError(
+        haptics: settings.feedback.haptics,
+        sound: settings.feedback.sound,
+      );
     }
 
     await Future.delayed(const Duration(milliseconds: 1000));
