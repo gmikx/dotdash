@@ -509,7 +509,9 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
                               border: Border.all(
                                 color: isCurrentLevel
                                     ? AppTheme.neonCyan
-                                    : Colors.white24,
+                                    : (isDark
+                                          ? Colors.white24
+                                          : Colors.black12),
                               ),
                             ),
                             child: Row(
@@ -521,7 +523,9 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
                                     shape: BoxShape.circle,
                                     color: isCurrentLevel
                                         ? AppTheme.neonCyan
-                                        : Colors.white12,
+                                        : (isDark
+                                              ? Colors.white12
+                                              : Colors.black12),
                                   ),
                                   child: Center(
                                     child: Text(
@@ -530,22 +534,39 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
                                         fontWeight: FontWeight.bold,
                                         color: isCurrentLevel
                                             ? Colors.black
-                                            : Colors.white,
+                                            : (isDark
+                                                  ? Colors.white
+                                                  : Colors.black87),
                                       ),
                                     ),
                                   ),
                                 ),
                                 const Gap(16),
                                 Expanded(
-                                  child: Text(
-                                    'Level $level',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                    ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Level $level',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black45,
+                                        ),
+                                      ),
+                                      Text(
+                                        _engine.getLevelName(level),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 if (isCurrentLevel)
