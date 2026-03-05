@@ -1,8 +1,19 @@
-# DotDash
+<div align="center">
+  <img src="assets/images/dotdash_logo.png" alt="DotDash Logo" width="200"/>
 
-A Morse code learning app for iOS and Android, built with Flutter.
+  # DotDash
 
-Practice sending and receiving Morse code - one letter at a time, or full sentences - with audio and haptic feedback.
+  **Master Morse Code • Gamified Learning • Real-Time Feedback**
+
+  [![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)](https://flutter.dev/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+</div>
+
+---
+
+A modern, highly-polished Morse code learning application for iOS, Android, and Web built entirely in Flutter.
+
+Whether you're a complete beginner or looking to improve your WPM (Words Per Minute), DotDash provides a gamified experience with immersive **audio cues**, **screen flashes**, and **haptic feedback** to help you practice sending and receiving Morse code—one letter at a time, or full sentences.
 
 ---
 
