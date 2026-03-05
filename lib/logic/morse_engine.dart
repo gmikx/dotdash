@@ -329,8 +329,8 @@ class MorseEngine {
       dot: unitMs.round(),
       dash: (unitMs * 3).round(),
       symbolGap: unitMs.round(),
-      letterGap: (unitMs * 6).round(),
-      wordGap: (unitMs * 10).round(),
+      letterGap: (unitMs * 3).round(),
+      wordGap: (unitMs * 7).round(),
     );
   }
 }
