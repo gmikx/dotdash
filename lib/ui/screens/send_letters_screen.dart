@@ -186,8 +186,6 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
                         children: [
                           const Gap(24),
 
-                          const Gap(24),
-
                           // Success counter
                           GlassContainer(
                             padding: const EdgeInsets.symmetric(
