@@ -30,6 +30,7 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
 
   bool _showHint = true;
   bool _isComplete = false;
+  bool _busy = false; // locks input during feedback playback
 
   @override
   void initState() {
@@ -87,8 +88,8 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
     }
   }
 
-  void _addSymbol(bool isDash) async {
-    if (_isComplete) return;
+  Future<void> _addSymbol(bool isDash) async {
+    if (_isComplete || _busy) return;
 
     final settings = ref.read(settingsProvider);
     final timing = _engine.getTiming(settings.wpm);
@@ -124,12 +125,12 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
         _advanceToNextChar();
       }
     } else {
-      // Wrong input
-      _handleError();
+      await _handleError();
     }
   }
 
-  void _handleError() async {
+  Future<void> _handleError() async {
+    _busy = true;
     final settings = ref.read(settingsProvider);
 
     if (settings.feedback.haptics || settings.feedback.sound) {
@@ -144,6 +145,7 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
     setState(() {
       _userInput = '';
     });
+    _busy = false;
   }
 
   @override

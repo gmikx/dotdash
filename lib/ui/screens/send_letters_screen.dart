@@ -30,6 +30,7 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
   bool _showError = false;
   bool _showHint = true;
   int _successCount = 0;
+  bool _busy = false; // locks input during feedback playback
 
   late AnimationController _confettiController;
 
@@ -60,7 +61,8 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
     });
   }
 
-  void _addSymbol(bool isDash) async {
+  Future<void> _addSymbol(bool isDash) async {
+    if (_busy) return;
     final settings = ref.read(settingsProvider);
     final timing = _engine.getTiming(settings.wpm);
 
@@ -92,15 +94,15 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
 
       // Check if complete
       if (newInput == _targetMorse) {
-        _handleSuccess();
+        await _handleSuccess();
       }
     } else {
-      // Wrong input
-      _handleError();
+      await _handleError();
     }
   }
 
-  void _handleSuccess() async {
+  Future<void> _handleSuccess() async {
+    _busy = true;
     final settings = ref.read(settingsProvider);
 
     setState(() {
@@ -118,10 +120,12 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
     _confettiController.forward(from: 0);
 
     await Future.delayed(const Duration(milliseconds: 1200));
+    _busy = false;
     _generateNewLetter();
   }
 
-  void _handleError() async {
+  Future<void> _handleError() async {
+    _busy = true;
     final settings = ref.read(settingsProvider);
 
     setState(() {
@@ -141,6 +145,7 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
       _userInput = '';
       _showError = false;
     });
+    _busy = false;
   }
 
   @override
