@@ -38,6 +38,7 @@ flutter run
 |----------|--------|
 | iOS      | Supported |
 | Android  | Supported |
+| Web      | Supported |
 
 ## License
 
