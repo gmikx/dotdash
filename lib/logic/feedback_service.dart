@@ -30,18 +30,18 @@ class FeedbackService {
     await _dotPlayer.setReleaseMode(ReleaseMode.stop);
     await _dashPlayer.setReleaseMode(ReleaseMode.stop);
 
-    // Prepare audio files
+    // Prepare audio files - filenames encode params so stale files are auto-ignored
     final tempDir = await getTemporaryDirectory();
     _tempPath = tempDir.path;
-    await _cacheSound('dot.wav', 80, frequency: 600);
-    await _cacheSound('dash.wav', 240, frequency: 600);
-    // await _cacheSound('error.wav', 300, frequency: 150);
-    // await _cacheSound('success.wav', 200, frequency: 1000);
+    final dotFile = 'dot_600hz_80ms.wav';
+    final dashFile = 'dash_600hz_240ms.wav';
+    await _cacheSound(dotFile, 80, frequency: 600);
+    await _cacheSound(dashFile, 240, frequency: 600);
 
     // Initial setup for players
     if (_tempPath != null) {
-      await _dotPlayer.setSource(DeviceFileSource('$_tempPath/dot.wav'));
-      await _dashPlayer.setSource(DeviceFileSource('$_tempPath/dash.wav'));
+      await _dotPlayer.setSource(DeviceFileSource('$_tempPath/$dotFile'));
+      await _dashPlayer.setSource(DeviceFileSource('$_tempPath/$dashFile'));
     }
 
     _initialized = true;
@@ -54,6 +54,7 @@ class FeedbackService {
   }) async {
     if (_tempPath == null) return;
     final file = File('$_tempPath/$filename');
+    // Filename encodes params — if file exists with this name, params haven't changed
     if (!await file.exists()) {
       final bytes = _generateWavBytes(durationMs, frequency: frequency);
       await file.writeAsBytes(bytes);
