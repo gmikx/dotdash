@@ -55,6 +55,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Desktop platforms (not supported)
+linux/
+macos/
+windows/
+
 # Machine-specific Android SDK config — contains local paths, never commit
 android/local.properties
 
