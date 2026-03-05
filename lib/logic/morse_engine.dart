@@ -282,7 +282,7 @@ class MorseEngine {
     final words = <String>[];
     final availableWords = List<String>.from(_wordList);
 
-    for (int i = 0; i < 2 && availableWords.isNotEmpty; i++) {
+    for (int i = 0; i < 3 && availableWords.isNotEmpty; i++) {
       final index = random.nextInt(availableWords.length);
       words.add(availableWords.removeAt(index));
     }

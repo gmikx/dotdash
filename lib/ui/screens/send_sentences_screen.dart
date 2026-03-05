@@ -232,43 +232,52 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
                                         ),
                                       ],
                                     ),
-                                    // Sentence with highlighted letter
+                                    // Sentence with highlighted letter — wrap by whole word
                                     Wrap(
                                       alignment: WrapAlignment.center,
-                                      children: List.generate(
-                                        _targetSentence.length,
-                                        (index) {
-                                          final char = _targetSentence[index];
-                                          final isCompleted =
-                                              index < _currentIndex;
-                                          final isCurrent =
-                                              index == _currentIndex;
-
-                                          return Container(
-                                            margin: const EdgeInsets.symmetric(
-                                              horizontal: 2,
-                                              vertical: 4,
-                                            ),
-                                            child: Text(
-                                              char,
-                                              style: TextStyle(
-                                                fontSize: 24,
-                                                fontWeight: FontWeight.bold,
-                                                color: isCurrent
-                                                    ? AppTheme.neonCyan
-                                                    : isCompleted
-                                                    ? (isDark
-                                                          ? Colors.white54
-                                                          : Colors.black45)
-                                                    : (isDark
-                                                          ? Colors.white
-                                                          : Colors.black87),
-                                              ),
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      children: () {
+                                        final widgets = <Widget>[];
+                                        int charIndex = 0;
+                                        for (final word
+                                            in _targetSentence.split(' ')) {
+                                          widgets.add(
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: word.split('').map((
+                                                char,
+                                              ) {
+                                                final index = charIndex++;
+                                                final isCompleted =
+                                                    index < _currentIndex;
+                                                final isCurrent =
+                                                    index == _currentIndex;
+                                                return Text(
+                                                  char,
+                                                  style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: isCurrent
+                                                        ? AppTheme.neonCyan
+                                                        : isCompleted
+                                                        ? (isDark
+                                                              ? Colors.white54
+                                                              : Colors.black45)
+                                                        : (isDark
+                                                              ? Colors.white
+                                                              : Colors.black87),
+                                                  ),
+                                                );
+                                              }).toList(),
                                             ),
                                           );
-                                        },
-                                      ),
+                                          charIndex++; // account for the space character
+                                        }
+                                        return widgets;
+                                      }(),
                                     ),
+
                                     const Gap(24),
                                     // Current letter morse code
                                     if (_showHint && _currentMorse.isNotEmpty)
