@@ -319,8 +319,13 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
                           else
                             _buildHardModeControls(),
 
-                          // Extra padding for bottom navbar
-                          const Gap(180),
+                          // Dynamic padding so content clears the glass nav bar
+                          // on all devices (including those with a home indicator).
+                          SizedBox(
+                            height:
+                                AppTheme.kNavBarHeight +
+                                MediaQuery.of(context).padding.bottom,
+                          ),
                         ],
                       ),
                     ),

@@ -212,7 +212,13 @@ class _ReceiveSentencesScreenState
                       ),
                       child: IntrinsicHeight(
                         child: Padding(
-                          padding: const EdgeInsets.only(bottom: 140),
+                          // Dynamic padding so content clears the glass nav bar
+                          // on all devices (including those with a home indicator).
+                          padding: EdgeInsets.only(
+                            bottom:
+                                AppTheme.kNavBarHeight +
+                                MediaQuery.of(context).padding.bottom,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [

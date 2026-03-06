@@ -185,7 +185,13 @@ class _SendSentencesScreenState extends ConsumerState<SendSentencesScreen> {
                     ),
                     child: IntrinsicHeight(
                       child: Padding(
-                        padding: const EdgeInsets.only(bottom: 180),
+                        // Dynamic padding so content clears the glass nav bar
+                        // on all devices (including those with a home indicator).
+                        padding: EdgeInsets.only(
+                          bottom:
+                              AppTheme.kNavBarHeight +
+                              MediaQuery.of(context).padding.bottom,
+                        ),
                         child: Column(
                           children: [
                             const Gap(24),

@@ -396,8 +396,13 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
                               ),
                             ),
 
-                            // Extra padding for bottom navbar to prevent overlap
-                            const Gap(140),
+                            // Dynamic padding so content clears the glass nav bar
+                            // on all devices (including those with a home indicator).
+                            SizedBox(
+                              height:
+                                  AppTheme.kNavBarHeight +
+                                  MediaQuery.of(context).padding.bottom,
+                            ),
                           ],
                         ),
                       ],
