@@ -5,11 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  /// Intrinsic height of the custom glass bottom nav bar.
-  /// = outer EdgeInsets.all(16)*2 + inner vertical(8)*2 + icon(24) + Gap(4) + label(~14) + item vertical(12)*2
-  /// Screens should add MediaQuery.of(context).padding.bottom on top of this
-  /// to also account for the device's home indicator / gesture bar.
-  static const double kNavBarHeight = 100.0;
+  /// Intrinsic height of the custom glass bottom nav bar (fixed, non-safe-area portion).
+  /// = outer Padding.all(16)×2 + inner Padding.vertical(8)×2
+  ///   + item: Padding.vertical(12)×2 + Icon(24) + Gap(4) + label(~14) = 66px
+  /// = 32 + 16 + 66 = 114px
+  /// At runtime, add MediaQuery.of(context).padding.bottom for the device home indicator.
+  static const double kNavBarHeight = 114.0;
 
   // Neon accent colors
   static const Color neonCyan = Color(0xFF00FFFF);

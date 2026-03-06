@@ -469,148 +469,168 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
   }
 
   Widget _buildLevelSelectModal(bool isDark) {
+    final mq = MediaQuery.of(context);
+    final bottomInset =
+        mq.padding.bottom; // safe area only; modal covers nav bar
+
     return GestureDetector(
       onTap: () => setState(() => _showLevelSelect = false),
-      child: Container(
-        color: Colors.black87,
-        child: Center(
-          child: GestureDetector(
-            onTap: () {}, // Prevent tap through
-            child: GlassContainer(
-              width: 320,
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'SELECT LEVEL',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  const Gap(24),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 400),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      itemCount: _engine.totalLevels,
-                      separatorBuilder: (context, index) => const Gap(12),
-                      itemBuilder: (context, index) {
-                        final level = index + 1;
-                        final isCurrentLevel = level == _currentLevel;
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final overlayHeight = constraints.maxHeight;
+          const topMargin = 32.0;
+          const bottomMargin = 16.0;
+          final modalMaxHeight =
+              overlayHeight - bottomInset - topMargin - bottomMargin;
 
-                        return GestureDetector(
-                          onTap: () => _selectLevel(level),
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isCurrentLevel
-                                  ? AppTheme.neonCyan.withValues(alpha: 0.2)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: isCurrentLevel
-                                    ? AppTheme.neonCyan
-                                    : (isDark
-                                          ? Colors.white24
-                                          : Colors.black12),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+          return Container(
+            color: Colors.black87,
+            padding: EdgeInsets.only(
+              top: topMargin,
+              bottom: bottomInset + bottomMargin,
+            ),
+            alignment: Alignment.topCenter,
+            child: GestureDetector(
+              onTap: () {}, // Prevent tap through
+              child: GlassContainer(
+                width: 320,
+                padding: const EdgeInsets.all(24),
+                constraints: BoxConstraints(maxHeight: modalMaxHeight),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'SELECT LEVEL',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const Gap(24),
+                    Flexible(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: ListView.separated(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          itemCount: _engine.totalLevels,
+                          separatorBuilder: (context, index) => const Gap(12),
+                          itemBuilder: (context, index) {
+                            final level = index + 1;
+                            final isCurrentLevel = level == _currentLevel;
+                            return GestureDetector(
+                              onTap: () => _selectLevel(level),
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: isCurrentLevel
+                                      ? AppTheme.neonCyan.withValues(alpha: 0.2)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
                                     color: isCurrentLevel
                                         ? AppTheme.neonCyan
                                         : (isDark
-                                              ? Colors.white12
+                                              ? Colors.white24
                                               : Colors.black12),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      '$level',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
                                         color: isCurrentLevel
-                                            ? Colors.black
+                                            ? AppTheme.neonCyan
                                             : (isDark
-                                                  ? Colors.white
-                                                  : Colors.black87),
+                                                  ? Colors.white12
+                                                  : Colors.black12),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          '$level',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: isCurrentLevel
+                                                ? Colors.black
+                                                : (isDark
+                                                      ? Colors.white
+                                                      : Colors.black87),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                                const Gap(16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Level $level',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: isDark
-                                              ? Colors.white54
-                                              : Colors.black45,
-                                        ),
+                                    const Gap(16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Level $level',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: isDark
+                                                  ? Colors.white54
+                                                  : Colors.black45,
+                                            ),
+                                          ),
+                                          Text(
+                                            _engine.getLevelName(level),
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : Colors.black87,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Text(
-                                        _engine.getLevelName(level),
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                    if (isCurrentLevel)
+                                      Icon(
+                                            Icons.check_circle,
+                                            color: AppTheme.neonCyan,
+                                            size: 20,
+                                          )
+                                          .animate()
+                                          .fadeIn(delay: 200.ms)
+                                          .slideY(begin: 0.2),
+                                  ],
                                 ),
-                                if (isCurrentLevel)
-                                  Icon(
-                                        Icons.check_circle,
-                                        color: AppTheme.neonCyan,
-                                        size: 20,
-                                      )
-                                      .animate()
-                                      .fadeIn(delay: 200.ms)
-                                      .slideY(begin: 0.2),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const Gap(24),
-                  GlassButton(
-                    onTap: () => setState(() => _showLevelSelect = false),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Center(
-                      child: Text(
-                        'BACK TO PRACTICE',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                          color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    const Gap(24),
+                    GlassButton(
+                      onTap: () => setState(() => _showLevelSelect = false),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: Text(
+                          'BACK TO PRACTICE',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
