@@ -54,6 +54,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
+      resizeToAvoidBottomInset: false,
+      backgroundColor: isDark ? const Color(0xFF0F0F1A) : Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
@@ -81,6 +83,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: PageView(
             controller: _pageController,
             onPageChanged: (index) {
+              FocusManager.instance.primaryFocus?.unfocus();
               setState(() => _currentIndex = index);
             },
             children: _screens,

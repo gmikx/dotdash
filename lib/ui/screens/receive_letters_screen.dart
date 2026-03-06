@@ -22,6 +22,8 @@ class ReceiveLettersScreen extends ConsumerStatefulWidget {
 class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
   final _engine = MorseEngine.instance;
   final _feedback = FeedbackService.instance;
+  final _textController = TextEditingController();
+  final _inputFocusNode = FocusNode();
 
   String _currentLetter = '';
   List<String> _options = [];
@@ -41,8 +43,16 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
     _generateNewQuestion();
   }
 
+  @override
+  void dispose() {
+    _textController.dispose();
+    _inputFocusNode.dispose();
+    super.dispose();
+  }
+
   void _generateNewQuestion() {
     final levelLetters = _engine.getLettersForLevel(_currentLevel);
+    _textController.clear(); // Clear previous answer (issue 6)
     setState(() {
       _currentLetter = _engine.getRandomLetterFromLevel(_currentLevel);
       // Get options from current level, ensure we have at least 4 (or all if less)
@@ -55,6 +65,10 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
       _showResult = false;
       _isCorrect = false;
     });
+    // Re-focus the text field in hard mode for quick typing
+    if (ref.read(settingsProvider).difficulty == Difficulty.hard) {
+      Future.microtask(() => _inputFocusNode.requestFocus());
+    }
   }
 
   void _selectLevel(int level) {
@@ -154,278 +168,307 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isHardMode =
+        ref.watch(settingsProvider).difficulty == Difficulty.hard;
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(isDark),
-      body: Stack(
-        children: [
-          // Background effects
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                      : [const Color(0xFFF0F9FF), const Color(0xFFE0F2FE)],
+      body: GestureDetector(
+        // Dismiss keyboard on tap outside input
+        onTap: () => _inputFocusNode.unfocus(),
+        behavior: HitTestBehavior.translucent,
+        child: Stack(
+          children: [
+            // Background effects
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                        : [const Color(0xFFF0F9FF), const Color(0xFFE0F2FE)],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Main Content
-          SafeArea(
-            bottom: false,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Top content
-                        Column(
-                          children: [
-                            const Gap(16),
+            // Main Content
+            SafeArea(
+              bottom: false,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final keyboardHeight = MediaQuery.of(
+                    context,
+                  ).viewInsets.bottom;
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Top content
+                          Column(
+                            children: [
+                              const Gap(16),
 
-                            // Level + Streak row
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              child: Row(
-                                children: [
-                                  // Level selector button
-                                  GlassButton(
-                                    onTap: () =>
-                                        setState(() => _showLevelSelect = true),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 10,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.signal_cellular_alt,
-                                          size: 18,
-                                          color: AppTheme.neonCyan,
-                                        ),
-                                        const Gap(8),
-                                        Text(
-                                          'LEVEL $_currentLevel',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                              // Level + Streak row
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                child: Row(
+                                  children: [
+                                    // Level selector button
+                                    GlassButton(
+                                      onTap: () => setState(
+                                        () => _showLevelSelect = true,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 10,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.signal_cellular_alt,
+                                            size: 18,
                                             color: AppTheme.neonCyan,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  // Streak
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black12,
-                                      borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(color: Colors.white10),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.local_fire_department,
-                                          color: Colors.orange,
-                                          size: 20,
-                                        ),
-                                        const Gap(4),
-                                        Text(
-                                          '$_streak',
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
+                                          const Gap(8),
+                                          Text(
+                                            'LEVEL $_currentLevel',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.neonCyan,
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                    const Spacer(),
+                                    // Streak
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black12,
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(
+                                          color: Colors.white10,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.local_fire_department,
+                                            color: Colors.orange,
+                                            size: 20,
+                                          ),
+                                          const Gap(4),
+                                          Text(
+                                            '$_streak',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
 
-                            const Gap(40),
+                              Gap(isHardMode ? 20 : 40),
 
-                            // Play button with Snake Border
-                            SnakeBorder(
-                              show: _showResult && _isCorrect,
-                              borderRadius:
-                                  30, // Matches GlassContainer radius approx
-                              padding: const EdgeInsets.all(4),
-                              child:
-                                  GestureDetector(
-                                        onTap: _isPlaying ? null : _playMorse,
-                                        child: GlassContainer(
-                                          width: 140,
-                                          height: 140,
-                                          padding: const EdgeInsets.all(20),
-                                          borderRadius: 24,
-                                          tintColor: _isPlaying
-                                              ? AppTheme.neonCyan.withValues(
-                                                  alpha: 0.2,
-                                                )
-                                              : null,
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                _isPlaying
-                                                    ? Icons.volume_up
-                                                    : Icons.play_arrow_rounded,
-                                                size: 56,
-                                                color: _isPlaying
-                                                    ? AppTheme.neonCyan
-                                                    : (isDark
-                                                          ? Colors.white
-                                                          : Colors.black87),
-                                              ),
-                                              const Gap(4),
-                                              Text(
-                                                _isPlaying
-                                                    ? 'PLAYING...'
-                                                    : 'PLAY',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 1.2,
+                              // Play button with Snake Border
+                              SnakeBorder(
+                                show: _showResult && _isCorrect,
+                                borderRadius:
+                                    30, // Matches GlassContainer radius approx
+                                padding: const EdgeInsets.all(4),
+                                child:
+                                    GestureDetector(
+                                          onTap: _isPlaying ? null : _playMorse,
+                                          child: GlassContainer(
+                                            width: isHardMode ? 110 : 140,
+                                            height: isHardMode ? 110 : 140,
+                                            padding: EdgeInsets.all(
+                                              isHardMode ? 12 : 20,
+                                            ),
+                                            borderRadius: 24,
+                                            tintColor: _isPlaying
+                                                ? AppTheme.neonCyan.withValues(
+                                                    alpha: 0.2,
+                                                  )
+                                                : null,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Icon(
+                                                  _isPlaying
+                                                      ? Icons.volume_up
+                                                      : Icons
+                                                            .play_arrow_rounded,
+                                                  size: isHardMode ? 40 : 56,
                                                   color: _isPlaying
                                                       ? AppTheme.neonCyan
                                                       : (isDark
-                                                            ? Colors.white70
-                                                            : Colors.black54),
+                                                            ? Colors.white
+                                                            : Colors.black87),
                                                 ),
+                                                const Gap(4),
+                                                Text(
+                                                  _isPlaying
+                                                      ? 'PLAYING...'
+                                                      : 'PLAY',
+                                                  style: TextStyle(
+                                                    fontSize: isHardMode
+                                                        ? 12
+                                                        : 14,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 1.2,
+                                                    color: _isPlaying
+                                                        ? AppTheme.neonCyan
+                                                        : (isDark
+                                                              ? Colors.white70
+                                                              : Colors.black54),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                        .animate(target: _isPlaying ? 1 : 0)
+                                        .shimmer(duration: 1000.ms)
+                                        .animate()
+                                        .fadeIn()
+                                        .scale(begin: const Offset(0.8, 0.8)),
+                              ),
+
+                              Gap(isHardMode ? 16 : 32),
+
+                              // Result feedback area
+                              if (_showResult)
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: isHardMode ? 8 : 12,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _isCorrect
+                                        ? AppTheme.successGreen.withValues(
+                                            alpha: 0.2,
+                                          )
+                                        : AppTheme.errorRed.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: _isCorrect
+                                          ? AppTheme.successGreen
+                                          : AppTheme.errorRed,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _isCorrect
+                                        ? 'CORRECT!'
+                                        : 'IT WAS "$_currentLetter"',
+                                    style: TextStyle(
+                                      fontSize: isHardMode ? 16 : 20,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1.5,
+                                      color: _isCorrect
+                                          ? AppTheme.successGreen
+                                          : AppTheme.errorRed,
+                                    ),
+                                  ),
+                                ).animate().fadeIn().scale(
+                                  begin: const Offset(0.8, 0.8),
+                                )
+                              else
+                                SizedBox(height: isHardMode ? 38 : 54),
+                            ],
+                          ),
+
+                          // Bottom content (Options / Hard-mode input)
+                          Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
+                                child: isHardMode
+                                    ? _buildHardModeInput(isDark)
+                                    : Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildOptionButton(0),
+                                              ),
+                                              const Gap(16),
+                                              Expanded(
+                                                child: _buildOptionButton(1),
                                               ),
                                             ],
                                           ),
-                                        ),
-                                      )
-                                      .animate(target: _isPlaying ? 1 : 0)
-                                      .shimmer(duration: 1000.ms)
-                                      .animate()
-                                      .fadeIn()
-                                      .scale(begin: const Offset(0.8, 0.8)),
-                            ),
-
-                            const Gap(32),
-
-                            // Result feedback area
-                            if (_showResult)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _isCorrect
-                                      ? AppTheme.successGreen.withValues(
-                                          alpha: 0.2,
-                                        )
-                                      : AppTheme.errorRed.withValues(
-                                          alpha: 0.2,
-                                        ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: _isCorrect
-                                        ? AppTheme.successGreen
-                                        : AppTheme.errorRed,
-                                    width: 2,
-                                  ),
-                                ),
-                                child: Text(
-                                  _isCorrect
-                                      ? 'CORRECT!'
-                                      : 'IT WAS "$_currentLetter"',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.5,
-                                    color: _isCorrect
-                                        ? AppTheme.successGreen
-                                        : AppTheme.errorRed,
-                                  ),
-                                ),
-                              ).animate().fadeIn().scale(
-                                begin: const Offset(0.8, 0.8),
-                              )
-                            else
-                              const SizedBox(height: 54), // Placeholder height
-                          ],
-                        ),
-
-                        // Bottom content (Options)
-                        Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
+                                          const Gap(16),
+                                          Row(
+                                            children: [
+                                              Expanded(
+                                                child: _buildOptionButton(2),
+                                              ),
+                                              const Gap(16),
+                                              Expanded(
+                                                child: _buildOptionButton(3),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                               ),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(child: _buildOptionButton(0)),
-                                      const Gap(16),
-                                      Expanded(child: _buildOptionButton(1)),
-                                    ],
-                                  ),
-                                  const Gap(16),
-                                  Row(
-                                    children: [
-                                      Expanded(child: _buildOptionButton(2)),
-                                      const Gap(16),
-                                      Expanded(child: _buildOptionButton(3)),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
 
-                            // Dynamic padding so content clears the glass nav bar
-                            // on all devices (including those with a home indicator).
-                            SizedBox(
-                              height:
-                                  AppTheme.kNavBarHeight +
-                                  MediaQuery.of(context).padding.bottom,
-                            ),
-                          ],
-                        ),
-                      ],
+                              // Dynamic padding: keyboard-aware in hard mode,
+                              // otherwise clears the glass nav bar.
+                              SizedBox(
+                                height: isHardMode && keyboardHeight > 0
+                                    ? keyboardHeight
+                                    : AppTheme.kNavBarHeight +
+                                          MediaQuery.of(context).padding.bottom,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Level Select Modal
-          if (_showLevelSelect) _buildLevelSelectModal(isDark),
-
-          // Flash overlay for morse signals
-          Positioned.fill(
-            child: IgnorePointer(
-              child: Opacity(
-                opacity: _flashOpacity,
-                child: Container(color: Colors.white),
+                  );
+                },
               ),
             ),
-          ),
-        ],
+
+            // Level Select Modal
+            if (_showLevelSelect) _buildLevelSelectModal(isDark),
+
+            // Flash overlay for morse signals
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: _flashOpacity,
+                  child: Container(color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -466,6 +509,71 @@ class _ReceiveLettersScreenState extends ConsumerState<ReceiveLettersScreen> {
         ),
       ),
     );
+  }
+
+  void _submitHardModeAnswer() {
+    final answer = _textController.text.trim().toUpperCase();
+    if (answer.isEmpty || _showResult) return;
+    // Don't clear _textController here — keep the letter visible
+    // until _generateNewQuestion clears it (issue 6)
+    _checkAnswer(answer);
+    // Re-request focus so keyboard stays open (issue 5)
+    Future.microtask(() => _inputFocusNode.requestFocus());
+  }
+
+  Widget _buildHardModeInput(bool isDark) {
+    return GlassContainer(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _textController,
+              focusNode: _inputFocusNode,
+              readOnly: _showResult,
+              textCapitalization: TextCapitalization.characters,
+              textAlign: TextAlign.center,
+              maxLength: 1,
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 4,
+                color: _showResult
+                    ? (_isCorrect ? AppTheme.successGreen : AppTheme.errorRed)
+                    : (isDark ? Colors.white : Colors.black87),
+              ),
+              decoration: InputDecoration(
+                hintText: _showResult ? '' : '?',
+                hintStyle: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white24 : Colors.black26,
+                ),
+                border: InputBorder.none,
+                counterText: '', // hide the "0/1" counter
+              ),
+              // Auto-submit on input instead of onSubmitted to keep keyboard open (issue 5)
+              onChanged: (value) {
+                if (value.isNotEmpty && !_showResult) {
+                  _submitHardModeAnswer();
+                }
+              },
+            ),
+          ),
+          const Gap(8),
+          GlassButton(
+            onTap: _showResult ? null : _submitHardModeAnswer,
+            padding: const EdgeInsets.all(12),
+            child: Icon(
+              Icons.send_rounded,
+              size: 24,
+              color: isDark ? Colors.white70 : Colors.black54,
+            ),
+          ),
+        ],
+      ),
+    );
+    // Removed duplicate "CORRECT: X" text — the result banner already shows this (issue 4)
   }
 
   Widget _buildLevelSelectModal(bool isDark) {
