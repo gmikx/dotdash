@@ -313,11 +313,12 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
                           const Spacer(),
 
                           // Input controls
-                          if (ref.watch(settingsProvider).difficulty ==
-                              Difficulty.easy)
-                            _buildEasyModeControls(isDark)
-                          else
-                            _buildHardModeControls(),
+                          MorseInputPanel(
+                            onInput: _addSymbol,
+                            isEasyMode:
+                                ref.watch(settingsProvider).difficulty ==
+                                Difficulty.easy,
+                          ),
 
                           // Dynamic padding so content clears the glass nav bar
                           // on all devices (including those with a home indicator).
@@ -337,103 +338,5 @@ class _SendLettersScreenState extends ConsumerState<SendLettersScreen>
         ],
       ),
     );
-  }
-
-  Widget _buildEasyModeControls(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: Row(
-        children: [
-          // Dot button
-          Expanded(
-            child: GlassButton(
-              height: 120,
-              onTap: () => _addSymbol(false),
-              tintColor: AppTheme.neonCyan.withValues(alpha: 0.1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.neonCyan,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonCyan.withValues(alpha: 0.5),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Gap(12),
-                  Text(
-                    'DOT',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const Gap(24),
-          // Dash button
-          Expanded(
-            child: GlassButton(
-              height: 120,
-              onTap: () => _addSymbol(true),
-              tintColor: AppTheme.neonPink.withValues(alpha: 0.1),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppTheme.neonPink,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppTheme.neonPink.withValues(alpha: 0.5),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Gap(12),
-                  Text(
-                    'DASH',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 1.5,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2);
-  }
-
-  Widget _buildHardModeControls() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: SizedBox(
-        height: 200,
-        child: TapPad(
-          onInput: (isDash) => _addSymbol(isDash),
-          activeColor: AppTheme.neonCyan,
-        ),
-      ),
-    ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2);
   }
 }
